@@ -1,4 +1,9 @@
+	
 INCLUDE Irvine32FCIS.inc ;DO NOT CHANGE THIS LINE
+INCLUDE macros.inc
+BUFFER_SIZE = 501
+TITLE Keyboard Display           (Keybd.asm)
+
 
 ;##########################################################################################;#
 ;							AUTOGRADER RELATED DATA										   ;#	  
@@ -21,19 +26,17 @@ INCLUDE Irvine32FCIS.inc ;DO NOT CHANGE THIS LINE
 ;      YOU CAN MODIFY, ADD OR EDIT THIS SECTION        #							
 ;#######################################################							
 																					
-.DATA					  													
+.model small
+.stack 100h
+.data				  													
 ;-------------------------Q1 DATA-----------------------	
-	str1 byte 30 dup (?)
 
 
 
 ;-----------------------Q1 DATA End---------------------	
-
-
+ 
 																					
 ;-------------------------Q2 DATA-----------------------	
-
-	num dword ?
 
 
 ;-----------------------Q2 DATA End---------------------	
@@ -42,14 +45,16 @@ INCLUDE Irvine32FCIS.inc ;DO NOT CHANGE THIS LINE
 
 ;-------------------------Q3 DATA-----------------------	
 
-
+str1 byte 'Enter K: ',0
+str2 byte 'Enter N: ',0
+str3 byte 'Enter W: ',0
 ;-----------------------Q3 DATA End---------------------	
 
 
 
 
 ;-------------------------Q4 DATA-----------------------
-str4 byte 50 dup(?)
+
 
 ;-----------------------Q4 DATA End---------------------	
 
@@ -58,19 +63,18 @@ str4 byte 50 dup(?)
 
 ;-------------------------Q5 DATA-----------------------	
 
-str2 byte 30 dup(?)
-str3 byte 30 dup (?)
-
+ arr dword 30 dup(?)
 
 ;-----------------------Q5 DATA End---------------------	
 
 
 
 ;-------------------------Q6 DATA-----------------------
-LengthofList dword ? 
-List1 byte 50 dup (?)
-List2 byte 50 dup (?) 
-OutputList byte 100 dup (?)
+Q4_Matrix_1 byte 30 dup(?)
+Q4_Matrix_2 byte 30 dup(?)
+str4 byte 'please, Enter original matrix values : ',0
+str5 byte 'The original matrix  : ',0
+
 
 ;-----------------------Q6 DATA End---------------------
 
@@ -78,7 +82,8 @@ OutputList byte 100 dup (?)
 
 
 ;-------------------------Q7 DATA-----------------------	
-arr1 dword 1,11,111,1111,11111,111111,1111111,11111111,111111111,1111111111
+
+
 
 ;-----------------------Q7 DATA End---------------------	
 														
@@ -166,21 +171,25 @@ MAIN ENDP											   ;#
 ; Question one procedure here
 ;----------------------------------------------------------
 Q1 PROC
-   call readdec
-   mov ebx,eax
-   dec ebx
-   call readdec
-   mov esi,eax
-   dec esi
-   mov edx,offset str1
-   mov ecx,lengthof str1
-   call readstring 
-
-   mov al,[edx+esi]
-   xchg al,[edx+ebx]
-   xchg al,[edx+esi]
-   call writestring
+  call readdec
+  mov ecx,eax
+  mov ebx,1
+  mov edx,1
+   l1:
+   mov esi,ecx
+   mov ecx,ebx
+   l2:
+   mov eax,edx
+   call writedec
+   mov al ," "
+   call writechar
+   inc edx
+   loop l2
    call crlf
+   mov ecx,esi
+   inc ebx
+  loop l1
+
 	RET
 
 Q1 ENDP
@@ -193,39 +202,28 @@ Q1 ENDP
 ; Question two procedure here
 ;----------------------------------------------------------
 Q2 PROC
-	 call readdec
-	mov ebx,eax
-	mov edx,ebx
-	call readdec
-	mov esi,eax
-	mov ecx,esi
-	l1:
-	add ebx ,2
-	mov eax,ebx
-	call writedec
-	mov al," "
-	call writechar
-	loop l1
-	call crlf
-	mov ecx,esi
-	sub ecx,1
-	add edx,1
-	mov eax,edx
-	call writedec
-	mov al," "
-	call writechar
-	l2:
-	add edx,2
-	mov eax,edx
-	call writedec
-	mov al," "
-	call writechar
-	loop l2
-	call crlf
-
-
-
-	
+  call readdec
+  mov ecx,eax
+  dec ecx
+  mov ebx,0
+  mov edx,1
+  mov eax,0
+  call writedec
+  call crlf
+  mov eax,1
+  call writedec
+  call crlf
+ 
+  l1:
+  add ebx,edx
+  mov eax,ebx
+  call writedec
+  call crlf
+  mov esi,ebx
+  mov ebx,edx
+  mov edx,esi
+ 
+  loop l1
 
 	RET
 
@@ -238,17 +236,41 @@ Q2 ENDP
 ; Question three procedure here
 ;----------------------------------------------------------
 Q3 PROC
-	call readdec;
-	mov num,eax
-	mov eax,0
-	mov ecx,num
-	l1:
-	add eax,num
-	loop l1
-call writedec
-call crlf
+	mov edx,offset str1
+	call writestring
 
-	RET
+	call readdec
+	mov edi,eax
+
+	mov edx,offset str2
+	call writestring
+
+	call readdec
+	mov ebx,eax
+
+	mov edx,offset str3
+	call writestring
+
+	call readdec
+	mov ecx,eax
+
+	mov edx,1
+	mov eax,0
+	l1:
+	mov esi,ecx
+	mov ecx,edx
+	l2:
+	add eax,edi
+	loop l2
+	mov ecx,esi
+	inc edx
+	loop l1
+	sub eax,ebx
+	call writeint
+	call crlf
+
+ret
+
 
 Q3 ENDP
 
@@ -259,28 +281,32 @@ Q3 ENDP
 ; Question four procedure here
 ;----------------------------------------------------------
 Q4 PROC
-	mov edx ,offset str4
-	mov ecx,lengthof str4
-	call readstring
-	mov esi,eax
-	call readdec
-	mov ecx ,eax
-	mov ebx,ecx
-	l1:
-	mov al,[edx]
-	call writechar
-    add edx,type str4
-	loop l1  
-	mov ecx ,ebx
-	sub esi,ebx
-	mov edx ,offset str4
-	l2:
-	mov al,[edx+esi]
-	call writechar
-    add edx,type str4
-	loop l2 
-	call crlf
+  call readdec
+  mov ecx,eax
+  sub ecx,2
+  mov ebx,2
+  mov edx,1
+  mov eax,2
+  call writedec
+  mov al ," "
+  call writechar
+  mov eax,1
+  call writedec
+  mov al ," "
+  call writechar
 
+  l1:
+  add ebx,edx
+  mov eax,ebx
+  call writedec
+  mov al ," "
+  call writechar
+ 
+  mov esi,ebx
+  mov ebx,edx
+  mov edx,esi
+  loop l1
+  call crlf
 	RET
 
 Q4 ENDP
@@ -292,40 +318,33 @@ Q4 ENDP
 ; Question five procedure here
 ;----------------------------------------------------------
 Q5 PROC
-	mov edx ,offset str2
-	mov ecx,lengthof str2
-	call readstring
-	mov ebx ,eax
-	mov edx ,offset str3
-	mov ecx,lengthof str3
-	call readstring
+call readdec
+mov ecx,eax
+mov edi,eax
+mov edx,offset arr
+	l3:
 	call readdec
-	mov ecx,eax
-	mov esi,ecx
-    mov edx ,offset str2
-	
-	l1:
-	mov al,[edx]
-	call writechar
-    add edx,type str2
-	loop l1  
-	 mov edx ,offset str3
-	call writestring
-
-	mov edx ,offset str2
-
-	sub ebx,esi
-	mov ecx ,ebx
+	mov [edx],eax
+	add edx,type arr
+	loop l3
+mov ebx,1
+mov edx,offset arr
+mov esi,0
+mov ecx,edi
+l1:
+	mov edi,ecx
+	mov ecx,ebx
 	l2:
-	mov al,[edx+esi]
-	call writechar
-	inc esi
+	add esi,[edx]
 	loop l2
+	mov ecx,edi
+	inc ebx
+	add edx,type arr
+	loop l1
+call crlf
+	mov eax,esi
+	call writedec
 	call crlf
-
-
-
-
 
 	RET
 
@@ -338,68 +357,88 @@ Q5 ENDP
 ; Question six procedure here
 ;----------------------------------------------------------
 Q6 PROC
-call readdec
- mov LengthofList, eax
- mov ecx,LengthofList
- mov edx,offset List1
- l1:
- call readchar
- mov [edx],al
- add edx ,type List1
- loop l1
-  mov ecx,LengthofList
- mov edx,offset List2
- l2:
- call readchar
- mov [edx],al
- add edx ,type List2
- loop l2
-
- mov edx,offset List1
- mov ebx,offset List2
- mov esi,offset OutputList
-
- mov ecx, LengthofList
- add ecx,ecx
-
- l3:
- mov al,[edx]
- mov [esi],al
- add esi ,type OutputList
- mov al,[ebx]
- mov [esi],al
-  add edx ,type List1
-  add ebx ,type List2
-  add esi ,type OutputList
-   loop l3
-    mov al,"["
-	call writechar
-	mov edx , offset OutputList
-
-	mov ecx, LengthofList
- add ecx,ecx
- dec ecx
-l4:
-	mov al,[edx]
-	call writechar
-	
-mov al,","
-call writechar
-    add edx,type OutputList
-	loop l4 
-
-	mov ebx,LengthofList
-	add  ebx,LengthofList
-	dec ebx
-	mov edx , offset OutputList
-mov al,[edx+ebx]
-call writechar
-mov al,"]"
-call writechar
+mov edx,offset str4
+call writestring
 call crlf
 
+mov edx,offset Q4_Matrix_1
 
-	RET
+
+mov ecx,6
+l1:
+call readchar
+mov [edx],al
+add edx,type Q4_Matrix_1
+loop l1
+
+mov ecx,3
+mov edi,1
+
+
+mov edx,offset str5
+call writestring
+mov edx,offset Q4_Matrix_1
+l2:
+mov ebx,ecx
+mov ecx,edi
+l3:
+mov al,[edx]
+call writechar
+mov al ," "
+call writechar
+add edx ,type Q4_Matrix_1
+loop l3
+
+call crlf
+mov ecx,ebx
+inc edi
+loop l2
+;--------------------------
+mov edx,offset str5
+call writestring
+call crlf
+
+mov ecx,3
+mov edi,1
+mov edx,offset Q4_Matrix_1
+mov esi,offset Q4_Matrix_2
+
+mov al ,[edx]
+mov [esi],al
+
+mov al ,[edx+1]
+mov [esi+2],al
+
+mov al ,[edx+2]
+mov [esi+1],al
+
+mov al ,[edx+4]
+mov [esi+4],al
+
+mov al ,[edx+3]
+mov [esi+5],al
+
+mov al ,[edx+5]
+mov [esi+3],al
+
+mov ecx,3
+mov edi,1
+l4:
+mov ebx,ecx
+mov ecx,edi
+l5:
+mov al,[esi]
+call writechar
+mov al ," "
+call writechar
+add esi ,type Q4_Matrix_1
+loop l5
+
+call crlf
+mov ecx,ebx
+inc edi
+loop l4
+
 
 Q6 ENDP
 
@@ -410,23 +449,11 @@ Q6 ENDP
 ; Question seven procedure here
 ;----------------------------------------------------------
 Q7 PROC
-	
-	call readdec
-	mov ecx,eax
-	mov esi,0
-	mov edx,0
-	l1:
-	mov ebx,[arr1+edx]
-	add esi,ebx
-	add edx, type arr1
-	loop l1
-	mov eax,esi
-	call writedec
-	call crlf
-	
+
+
 	RET
 
 Q7 ENDP
-
+;---------------------------------------------------------------------
 
 END MAIN
